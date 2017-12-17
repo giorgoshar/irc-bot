@@ -5,7 +5,6 @@ import hashlib
 import pickle
 import argparse
 
-
 class members:
     def __init__(self):
         self.members = {}
@@ -47,7 +46,7 @@ def setup(bot):
 def run(bot, info):
 
     cmd = info['msg'].split()[0].strip()
-    
+
     if(cmd == '!admin'):
 
         parser = argparse.ArgumentParser(description='Admin')
@@ -73,4 +72,3 @@ def run(bot, info):
 
             if args.save:
                 bot.members.save()
-

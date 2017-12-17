@@ -13,7 +13,6 @@ from twisted.python import log
 from config import Config
 
 
-
 class MessageLogger:
     def __init__(self, file):
         self.file = file
@@ -28,7 +27,6 @@ class MessageLogger:
 
 class ModuleManager:
     def __init__(self, bot):
-        self.command = {}
         self.modules = []
         self.bot     = bot
         self.path    = os.getcwd() + '\modules'
@@ -62,13 +60,11 @@ class ModuleManager:
     def reload(self):
         self.load()
 
-    def get_commands(self): pass
-
 class LogBot(irc.IRCClient):
     nickname = 'scibot'
     password = ''
     lineRate = None
-    
+
     def __init__(self):
         irc.IRCClient.__init__(self)
         self.mainchan = '#testing'

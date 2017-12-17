@@ -94,10 +94,10 @@ def setup(bot):
     t.start()
 
 def run(bot, info):
-    
+
     cmd = info['msg'].split()[0].strip()
 
-    if(cmd == '!reddit'):
+    if cmd == '!reddit' and bot.members.is_logged(info['user']):
         parser = argparse.ArgumentParser(description='Reddit')
         parser.add_argument('-limit', '--limit', nargs='?', type=int, const=1)
         parser.add_argument('-time',  '--time',  nargs='?', type=int, const=10)
@@ -112,7 +112,6 @@ def run(bot, info):
 
         args  = parser.parse_args(info['msg'].split()[1:])
 
-        # if(bot.members.is_logged(info['user'])):
         if args.limit: bot.reddit.set_limit(args.limit)
         if args.time : bot.reddit.set_time(args.time)
 
