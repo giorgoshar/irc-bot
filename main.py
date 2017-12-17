@@ -112,7 +112,7 @@ class LogBot(irc.IRCClient):
         self.modules.run(data)
 
         if channel == self.nickname:
-            self.modules.reload()
+            self.modules.reload() # for test
             pass # prive
         if channel.startswith('#'):  pass # channel
 
