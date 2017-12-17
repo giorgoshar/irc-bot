@@ -7,6 +7,7 @@ import threading
 import unicodedata
 import random
 import imp
+import ctypes
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol, ssl, task
 from twisted.python import log
@@ -40,6 +41,8 @@ class ModuleManager:
             t.setDaemon(True)
             t.start()
             threads.append(t)
+        # for t in threads:
+            # t.join()
 
     def load(self):
         print ("Loading modules")
@@ -58,6 +61,11 @@ class ModuleManager:
                     print ('Module `%s` has been loaded' % (name))
 
     def reload(self):
+        safe_threads = ['MainThread', 'PoolThread-twisted.internet.reactor-0']
+        for thread in threading.enumerate():
+            if thread.name in safe_threads:
+                continue
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread.ident), ctypes.py_object(SystemExit))
         self.load()
 
 class LogBot(irc.IRCClient):
@@ -103,7 +111,7 @@ class LogBot(irc.IRCClient):
         }
         self.modules.run(data)
 
-        if channel == self.nickname: 
+        if channel == self.nickname:
             self.modules.reload()
             pass # prive
         if channel.startswith('#'):  pass # channel
