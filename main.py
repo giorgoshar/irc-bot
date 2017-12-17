@@ -26,36 +26,43 @@ class MessageLogger:
 	def close(self):
 		self.file.close()
 
-
 class ModuleManager:
 	def __init__(self, bot):
-		self.command  = {}
-		self.modules  = []
-		self.bot      = bot
-		self.mod_path = os.getcwd() + '\modules'
-		sys.path.append(self.mod_path)
+		self.command = {}
+		self.modules = []
+		self.bot     = bot
+		self.path    = os.getcwd() + '\modules'
+		sys.path.append(self.path)
+		self.load()
 
-	def run(self, cmd, args):
-		t = threading.Thread(target=self.command[cmd]['run'], args=(self.bot, args,))
-		t.daemon = True
-		t.start()
+	def run(self, data):
+		threads = []
+		for module in self.modules:
+			t = threading.Thread(target=module['run'], args=(self.bot, data,))
+			t.setDaemon(True)
+			t.start()
+			threads.append(t)
 
 	def load(self):
-		modile_flist = [f.name for f in os.scandir(self.mod_path) if f.is_file()]
-		for mfname in modile_flist:
-			name = mfname.split('.')[0]
-			ext  = mfname.split('.')[-1]
-			if(ext == 'py'):
-				mod = imp.load_source(name, self.mod_path + '\\' + mfname)
-				mod.setup(self.bot)
-				self.command[name] = {
-					'cmd' : name,
-					'mod' : mod,
-					'run' : mod.run,
-				}
-				print ('Module `%s` has been loaded' % (name))
+		print ("Loading modules")
+		for item in os.scandir(self.path):
+			if item.is_file():
+				_, ext = os.path.splitext(item)
+				if ext == '.py':
+					name = item.name
+					mod  = imp.load_source(name, _ + ext)
+					if hasattr(mod, 'setup'): mod.setup(self.bot)
+					module = {
+						'mod'   : mod,
+						'run'  :  mod.run   if hasattr(mod, 'run'  ) else None,
+					}
+					self.modules.append(module)
+					print ('Module `%s` has been loaded' % (name))
+
 	def reload(self):
 		self.load()
+
+	def get_commands(self): pass
 
 class LogBot(irc.IRCClient):
 	nickname = 'scibot'
@@ -68,13 +75,7 @@ class LogBot(irc.IRCClient):
 		self.modules  = ModuleManager(self)
 		self.raw_data = ''
 
-	def loadModules(self):
-		print ("Loading modules")
-		self.modules.load()
-
 	def connectionMade(self):
-		# Load modules
-		self.loadModules()
 		# Connect to server
 		irc.IRCClient.connectionMade(self)
 		print ("Connected")
@@ -104,29 +105,13 @@ class LogBot(irc.IRCClient):
 			'msg'     : msg,
 			'raw_data': self.raw_data
 		}
+		self.modules.run(data)
 
-		# for command in self.modules.command:
-		# 	match = re.compile(command['cmd'])
-		# 	print (re.findall(match, msg))
-
-		if channel == self.nickname: pass # prive
+		if channel == self.nickname: 
+			self.modules.reload()
+			pass # prive
 		if channel.startswith('#'):  pass # channel
 
-		# triggers = str(Config.trigger)
-		triggers = ','.join(['!', '.'])
-		match_trigger = re.compile(r'(?P<command>^[' + triggers + '][^\s]+)')
-		print(re.findall(match_trigger, msg))
-
-
-
-		# prv and chan
-		if msg.startswith(Config.trigger):
-			cmd  = msg.split()[0].replace(Config.trigger, '').strip()
-			args = msg.split()[1:]
-			if cmd in self.modules.command.keys():
-				self.modules.run(cmd, data)
-			if cmd == 'reload':
-				self.modules.reload()
 
 	def alterCollidedNick(self, nickname):
 		return nickname + str(random.randint(0, 100))

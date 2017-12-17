@@ -45,32 +45,32 @@ def setup(bot):
 	bot.members = members()
 
 def run(bot, info):
-	parser = argparse.ArgumentParser(description='Admin')
-	parser.add_argument('-login', '--login', nargs='?', type=str)
-	parser.add_argument('-list',  '--list',  action='store_true')
-	parser.add_argument('-online','--online',action='store_true')
-	parser.add_argument('-save',  '--save',  action='store_true')
 
-	args  = parser.parse_args(info['msg'].split()[1:])
+	cmd = info['msg'].split()[0].strip()
+	
+	if(cmd == '!admin'):
 
-	print(args)
+		parser = argparse.ArgumentParser(description='Admin')
+		parser.add_argument('-login', '--login', nargs='?', type=str)
+		parser.add_argument('-list',  '--list',  action='store_true')
+		parser.add_argument('-online','--online',action='store_true')
+		parser.add_argument('-save',  '--save',  action='store_true')
+		args  = parser.parse_args(info['msg'].split()[1:])
 
-	if args.login:
-		password = hashlib.md5(args.login.encode('utf-8')).hexdigest()
-		bot.members.login(info['user'], password)
+		if args.login:
+			password = hashlib.md5(args.login.encode('utf-8')).hexdigest()
+			bot.members.login(info['user'], password)
+			if(bot.members.is_logged(info['user'])):
+				bot.msg(info['user'], 'Logged!')
+
+		# Admin Commands
 		if(bot.members.is_logged(info['user'])):
-			bot.msg(info['user'], 'Logged!')
+			if args.list:
+				bot.msg(info['user'], bot.members.get_all())
 
-	# Admin Commands
-	if(bot.members.is_logged(info['user'])):
-		if args.list:
-			bot.msg(info['user'], bot.members.get_all())
+			if args.online:
+				bot.msg(info['user'], bot.members.online_users())
 
-		if args.online:
-			bot.msg(info['user'], bot.members.online_users())
+			if args.save:
+				bot.members.save()
 
-		if args.save:
-			bot.members.save()
-
-
-__command_regex__ = r'!admin'
