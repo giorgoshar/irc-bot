@@ -1,5 +1,5 @@
 class Config:
-	hostname = 'otrere.irc.gr'
+	hostname = 'srv.irc.gr'
 	port     = 6667
 	trigger  = '!'
 	logfile  = 'test.txt'
