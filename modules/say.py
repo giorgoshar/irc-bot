@@ -3,6 +3,11 @@ import sys
 import time
 from urllib.parse import urlparse, parse_qs
 import re
+import requests
+import json
+import isodate
+
+api_key = 'API_KEY'
 
 def setup(bot):
     pass
@@ -15,4 +20,23 @@ def run(bot, info):
     res   = re.search(regex, info['msg'])
 
     if(res):
-        print (res)
+        res.group()
+        parsed = urlparse('https://www.' + res.group())
+        link   = parse_qs(parsed.query)
+        if 'v' in link:
+            if len(link['v']) == 1:
+                payload = {'id': link['v'][0], 'part': 'contentDetails,statistics,snippet', 'key': api_key}
+                req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload)
+                theJSON = json.loads(req.content)
+                with open('t.json', 'w') as f:
+                    f.write(str(theJSON))
+                if 'error' not in theJSON and theJSON['pageInfo']['totalResults'] != 0:
+                    msg  = 'Title: ' + theJSON['items'][0]['snippet']['title']
+                    msg += ' | '
+                    msg += 'Lenght: ' + str(isodate.parse_duration(theJSON['items'][0]['contentDetails']['duration']))
+                    msg += ' | '
+                    msg += 'Views: ' + theJSON['items'][0]['statistics']['viewCount']
+                    msg += ' | '
+                    msg += 'Channel: ' + theJSON['items'][0]['snippet']['channelTitle']
+                    bot.msg(bot.mainchan, msg)
+

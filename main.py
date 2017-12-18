@@ -46,6 +46,7 @@ class ModuleManager:
 
     def load(self):
         print ("Loading modules")
+        self.modules = []
         for item in os.scandir(self.path):
             if item.is_file():
                 _, ext = os.path.splitext(item)
@@ -110,12 +111,10 @@ class LogBot(irc.IRCClient):
             'raw_data': self.raw_data
         }
         self.modules.run(data)
-
-        if channel == self.nickname:
-            self.modules.reload() # for test
-            pass # prive
+        if(msg.startswith('!reload')):
+             self.modules.reload()
+        if channel == self.nickname: pass # prive
         if channel.startswith('#'):  pass # channel
-
 
     def alterCollidedNick(self, nickname):
         return nickname + str(random.randint(0, 100))
