@@ -7,7 +7,8 @@ import requests
 import json
 import isodate
 
-api_key = 'API_KEY'
+
+youtube_api_key = 'API_KEY'
 
 def setup(bot):
     pass
@@ -25,7 +26,7 @@ def run(bot, info):
         link   = parse_qs(parsed.query)
         if 'v' in link:
             if len(link['v']) == 1:
-                payload = {'id': link['v'][0], 'part': 'contentDetails,statistics,snippet', 'key': api_key}
+                payload = {'id': link['v'][0], 'part': 'contentDetails,statistics,snippet', 'key': youtube_api_key}
                 headers = {'User-agent': 'Chrome'}
                 req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload, headers=headers)
                 theJSON = json.loads(req.text)

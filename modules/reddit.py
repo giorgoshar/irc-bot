@@ -24,8 +24,6 @@ class Reddit:
                 'EverythingScience', 
                 'ScienceHumour',
                 'scientificresearch',
-                'ProgrammerHumor',
-                'physicsjokes',
             ],
             'limit'      : 1,
             'interval'   : 10, #minutes
