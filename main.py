@@ -30,7 +30,7 @@ class ModuleManager:
     def __init__(self, bot):
         self.modules = []
         self.bot     = bot
-        self.path    = os.getcwd() + '\modules'
+        self.path    = os.getcwd() + '/modules'
         sys.path.append(self.path)
         self.load()
 
@@ -49,7 +49,7 @@ class ModuleManager:
         self.modules = []
         for item in os.scandir(self.path):
             if item.is_file():
-                _, ext = os.path.splitext(item)
+                _, ext = os.path.splitext(self.path + '/' + item.name)
                 if ext == '.py':
                     name = item.name
                     mod  = imp.load_source(name, _ + ext)
@@ -60,7 +60,7 @@ class ModuleManager:
                     }
                     self.modules.append(module)
                     print ('Module `%s` has been loaded' % (name))
-
+    
     def reload(self):
         safe_threads = ['MainThread', 'PoolThread-twisted.internet.reactor-0']
         for thread in threading.enumerate():
@@ -111,7 +111,7 @@ class LogBot(irc.IRCClient):
             'raw_data': self.raw_data
         }
         self.modules.run(data)
-        if(msg.startswith('!reload')):
+        if(msg.startswith('!reload') and user == 'Singularity'):
              self.modules.reload()
         if channel == self.nickname: pass # prive
         if channel.startswith('#'):  pass # channel

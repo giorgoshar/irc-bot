@@ -26,10 +26,9 @@ def run(bot, info):
         if 'v' in link:
             if len(link['v']) == 1:
                 payload = {'id': link['v'][0], 'part': 'contentDetails,statistics,snippet', 'key': api_key}
-                req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload)
-                theJSON = json.loads(req.content)
-                with open('t.json', 'w') as f:
-                    f.write(str(theJSON))
+                headers = {'User-agent': 'Chrome'}
+                req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload, headers=headers)
+                theJSON = json.loads(req.text)
                 if 'error' not in theJSON and theJSON['pageInfo']['totalResults'] != 0:
                     msg  = 'Title: ' + theJSON['items'][0]['snippet']['title']
                     msg += ' | '
