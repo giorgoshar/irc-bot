@@ -6,7 +6,7 @@ import re
 import requests
 import json
 import isodate
-
+from ircformat import *
 
 youtube_api_key = 'API_KEY'
 
@@ -14,7 +14,6 @@ def setup(bot):
     pass
 
 def run(bot, info):
-    print (bot, info)
 
     # regex = r'.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
     regex = r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)'
@@ -31,7 +30,10 @@ def run(bot, info):
                 req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload, headers=headers)
                 theJSON = json.loads(req.text)
                 if 'error' not in theJSON and theJSON['pageInfo']['totalResults'] != 0:
-                    msg  = 'Title: ' + theJSON['items'][0]['snippet']['title']
+                    msg =  Style.colored('You', color = Colors.RED, bg = Colors.WHITE)
+                    msg += Style.colored('Tube', color = Colors.WHITE, bg = Colors.RED)
+                    msg =  Style.bold(msg) + ' '
+                    msg += 'Title: ' + theJSON['items'][0]['snippet']['title']
                     msg += ' | '
                     msg += 'Lenght: ' + str(isodate.parse_duration(theJSON['items'][0]['contentDetails']['duration']))
                     msg += ' | '
@@ -39,4 +41,3 @@ def run(bot, info):
                     msg += ' | '
                     msg += 'Channel: ' + theJSON['items'][0]['snippet']['channelTitle']
                     bot.msg(bot.mainchan, msg)
-

@@ -110,6 +110,7 @@ class LogBot(irc.IRCClient):
             'msg'     : msg,
             'raw_data': self.raw_data
         }
+        
         self.modules.run(data)
         if(msg.startswith('!reload') and user == 'Singularity'):
              self.modules.reload()

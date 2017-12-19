@@ -24,6 +24,8 @@ class Reddit:
                 'EverythingScience', 
                 'ScienceHumour',
                 'scientificresearch',
+                'ProgrammerHumor',
+                'physicsjokes',
             ],
             'limit'      : 1,
             'interval'   : 10, #minutes
@@ -87,9 +89,9 @@ class Reddit:
 
 def setup(bot):
     bot.reddit = Reddit()
-    t = threading.Thread(target=bot.reddit.notifier, args=(bot,))
-    t.setDaemon(True)
-    t.start()
+    # t = threading.Thread(target=bot.reddit.notifier, args=(bot,))
+    # t.setDaemon(True)
+    # t.start()
 
 def run(bot, info):
 
