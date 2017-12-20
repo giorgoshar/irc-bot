@@ -8,7 +8,7 @@ import json
 import isodate
 from ircformat import *
 
-youtube_api_key = 'API_KEY'
+youtube_api_key = 'AIzaSyDevHnh3v7bec-GxCwmFkKuyd7BGUUiqYk'
 
 def setup(bot):
     pass

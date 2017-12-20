@@ -51,11 +51,11 @@ class Reddit:
 
                     source, newlink = tinyurl(post['data']['url'])
 
-                    title  = '\x036'  + post['data']['title'] + '\x0f'
-                    source = '\x0311' + source  + '\x0f'
-                    url    = '\x032'  + newlink + '\x0f'
+                    title  = '\x032'  + post['data']['title'] + '\x0f'
+                    source = '\x036'  + source  + '\x0f'
+                    tlink  = '\x0311' + newlink + '\x0f'
 
-                    msg = 'Title: {} Link: {} Source: {}'.format(title, url, source)
+                    msg = 'Title: {} Source: {} Link: {}'.format(title, source, tlink)
 
                     bot.msg(bot.mainchan, msg)
 

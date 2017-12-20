@@ -16,7 +16,7 @@ class Colors:
     LGREY = '15'
 
 class Style:
-    def colored(text, bg = '0', color = '1'): 
+    def colored(text, bg = '', color = ''): 
         return '\x03{},{}{}\x03'.format(bg, color, text)
     def bold(text): 
         return '\x02{}\x02'.format(text)

@@ -5,6 +5,9 @@ import hashlib
 import pickle
 import argparse
 
+class config:
+    filename = 'admins.json'
+
 class members:
     def __init__(self):
         self.members = {}
@@ -14,7 +17,7 @@ class members:
             'is_on' : False,
             'la_on' : None,
         }
-        self.admins_f = 'admins.p'
+        self.admins_f = config.filename
 
     def is_admin(self, name):
         return name in self.members.keys()

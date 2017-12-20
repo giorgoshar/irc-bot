@@ -37,6 +37,7 @@ class ModuleManager:
     def run(self, data):
         threads = []
         for module in self.modules:
+            if module['enabled'] == False: continue
             t = threading.Thread(target=module['run'], args=(self.bot, data,))
             t.setDaemon(True)
             t.start()
@@ -55,8 +56,10 @@ class ModuleManager:
                     mod  = imp.load_source(name, _ + ext)
                     if hasattr(mod, 'setup'): mod.setup(self.bot)
                     module = {
-                        'mod'   : mod,
-                        'run'  :  mod.run   if hasattr(mod, 'run'  ) else None,
+                        'name'    : name,
+                        'mod'     : mod,
+                        'run'     : mod.run   if hasattr(mod, 'run'  ) else None,
+                        'enabled' : True,
                     }
                     self.modules.append(module)
                     print ('Module `%s` has been loaded' % (name))
@@ -68,6 +71,26 @@ class ModuleManager:
                 continue
             ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread.ident), ctypes.py_object(SystemExit))
         self.load()
+
+    def list(self):
+        mods = []
+        for module in self.modules:
+            mod = {
+                'name'    : module['name'],
+                'enabled' : module['enabled']
+            }
+            mods.append(mod)
+        return str(mods)
+
+    def disable(self, name):
+        for module in self.modules:
+            if module['name'] == name:
+                module['enabled'] = False
+
+    def enable(self, name):
+        for module in self.modules:
+            if module['name'] == name:
+                module['enabled'] = True
 
 class LogBot(irc.IRCClient):
     nickname = 'scibot'
@@ -114,7 +137,8 @@ class LogBot(irc.IRCClient):
         self.modules.run(data)
 
         if(msg.startswith('!reload') and user == 'Singularity'):
-             self.modules.reload()
+            self.modules.reload()
+
         if channel == self.nickname: pass # prive
         if channel.startswith('#'):  pass # channel
 
