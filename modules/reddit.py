@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import urllib
 import requests
 import json
 import threading
@@ -9,23 +10,20 @@ import argparse
 import pickle
 
 
-def beautifyTEXT(message):
-    pass
+def tinyurl(url):
+    link    = 'https://tinyurl.com/api-create.php?url={}'.format(url)
+    newlink = requests.get(link, headers = {'User-agent': 'Chrome'}).text
+    source  = urllib.parse.urlparse(url).netloc
+    return (source, newlink)
 
 class Reddit:
     def __init__(self):
         self.options = {
             'subreddits' : [
                 'WorldNews',
-                'LadiesofScience',
-                'labrats',
                 'science', 
-                'ScienceFacts', 
                 'EverythingScience', 
-                'ScienceHumour',
                 'scientificresearch',
-                'ProgrammerHumor',
-                'physicsjokes',
             ],
             'limit'      : 1,
             'interval'   : 10, #minutes
@@ -46,15 +44,20 @@ class Reddit:
                     if(post['data']['stickied']): continue
                     if(postID in self.posts): continue
 
+                    self.posts.append(postID)
+
                     if len(post['data']['title']) >= 200:
                         post['data']['title'] = post['data']['title'][0: 200] + '...'
 
-                    self.posts.append(postID)
+                    source, newlink = tinyurl(post['data']['url'])
 
-                    title = '•\x036 ' + post['data']['title'] + '\x0f • '
-                    url   = '\x032' + post['data']['url']
+                    title  = '\x036'  + post['data']['title'] + '\x0f'
+                    source = '\x0311' + source  + '\x0f'
+                    url    = '\x032'  + newlink + '\x0f'
 
-                    bot.msg(bot.mainchan, title + url)
+                    msg = 'Title: {} Link: {} Source: {}'.format(title, url, source)
+
+                    bot.msg(bot.mainchan, msg)
 
                 time.sleep(2)
             time.sleep(60 * self.options['interval'])
@@ -89,9 +92,9 @@ class Reddit:
 
 def setup(bot):
     bot.reddit = Reddit()
-    # t = threading.Thread(target=bot.reddit.notifier, args=(bot,))
-    # t.setDaemon(True)
-    # t.start()
+    t = threading.Thread(target=bot.reddit.notifier, args=(bot,))
+    t.setDaemon(True)
+    t.start()
 
 def run(bot, info):
 
@@ -123,9 +126,4 @@ def run(bot, info):
         if args.subreddit_list:
             msg = bot.reddit.subreddit_list()
             bot.msg(bot.mainchan, msg)
-
-
-
-
-
 

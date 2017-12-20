@@ -13,11 +13,12 @@ youtube_api_key = 'API_KEY'
 def setup(bot):
     pass
 
-def run(bot, info):
+def run(bot, data):
+    print (bot, data)
 
     # regex = r'.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
     regex = r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)'
-    res   = re.search(regex, info['msg'])
+    res   = re.search(regex, data['msg'])
 
     if(res):
         res.group()
@@ -41,3 +42,10 @@ def run(bot, info):
                     msg += ' | '
                     msg += 'Channel: ' + theJSON['items'][0]['snippet']['channelTitle']
                     bot.msg(bot.mainchan, msg)
+
+
+    if(data['msg'].startswith('!say') and data['user'] == 'Singularity'):
+        msg = data['msg'].split()
+        msg = ''.join(msg[1:])
+
+        bot.msg(bot.mainchan, msg)
