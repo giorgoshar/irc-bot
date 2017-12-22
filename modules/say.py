@@ -14,7 +14,6 @@ def setup(bot):
     pass
 
 def run(bot, data):
-    print (bot, data)
 
     # regex = r'.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
     regex = r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)'
@@ -48,4 +47,4 @@ def run(bot, data):
         msg = data['msg'].split()
         msg = ''.join(msg[1:])
 
-        bot.msg(bot.mainchan, msg)
+        # bot.msg(bot.mainchan, msg)

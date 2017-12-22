@@ -126,4 +126,3 @@ def run(bot, info):
         if args.subreddit_list:
             msg = bot.reddit.subreddit_list()
             bot.msg(bot.mainchan, msg)
-
