@@ -31,15 +31,16 @@ def run(bot, data):
                 theJSON = json.loads(req.text)
                 if 'error' not in theJSON and theJSON['pageInfo']['totalResults'] != 0:
                     msg =  Style.colored('You', color = Colors.RED, bg = Colors.WHITE)
-                    msg += Style.colored('Tube', color = Colors.WHITE, bg = Colors.RED)
-                    msg =  Style.bold(msg) + ' '
-                    msg += 'Title: ' + theJSON['items'][0]['snippet']['title']
-                    msg += ' | '
-                    msg += 'Lenght: ' + str(isodate.parse_duration(theJSON['items'][0]['contentDetails']['duration']))
-                    msg += ' | '
-                    msg += 'Views: ' + theJSON['items'][0]['statistics']['viewCount']
-                    msg += ' | '
-                    msg += 'Channel: ' + theJSON['items'][0]['snippet']['channelTitle']
+                    ytlogo_you  = Style.colored('You',  color=Colors.RED,   bg=Colors.WHITE)
+                    ytlogo_tube = Style.colored('Tube', color=Colors.WHITE, bg=Colors.RED)
+                    ytlogo      = Style.bold(ytlogo_you + ytlogo_tube)
+
+                    title    = theJSON['items'][0]['snippet']['title']
+                    duration = str(isodate.parse_duration(theJSON['items'][0]['contentDetails']['duration']))
+                    views    = int(theJSON['items'][0]['statistics']['viewCount'])
+                    channel  = theJSON['items'][0]['snippet']['channelTitle']
+
+                    msg = '{} Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
                     bot.msg(bot.mainchan, msg)
 
 
