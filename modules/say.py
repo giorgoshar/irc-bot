@@ -15,7 +15,6 @@ def setup(bot):
 
 def run(bot, data):
 
-    # regex = r'.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
     regex = r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)'
     res   = re.search(regex, data['msg'])
 
