@@ -38,5 +38,5 @@ def run(bot, data):
                     views    = int(theJSON['items'][0]['statistics']['viewCount'])
                     channel  = theJSON['items'][0]['snippet']['channelTitle']
 
-                    msg = '{} Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
+                    msg = '{}Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
                     bot.msg(bot.mainchan, msg)
