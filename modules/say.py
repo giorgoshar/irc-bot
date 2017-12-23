@@ -30,7 +30,6 @@ def run(bot, data):
                 req     = requests.Session().get('https://www.googleapis.com/youtube/v3/videos', params=payload, headers=headers)
                 theJSON = json.loads(req.text)
                 if 'error' not in theJSON and theJSON['pageInfo']['totalResults'] != 0:
-                    msg =  Style.colored('You', color = Colors.RED, bg = Colors.WHITE)
                     ytlogo_you  = Style.colored('You',  color=Colors.RED,   bg=Colors.WHITE)
                     ytlogo_tube = Style.colored('Tube', color=Colors.WHITE, bg=Colors.RED)
                     ytlogo      = Style.bold(ytlogo_you + ytlogo_tube)
@@ -42,10 +41,3 @@ def run(bot, data):
 
                     msg = '{} Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
                     bot.msg(bot.mainchan, msg)
-
-
-    if(data['msg'].startswith('!say') and data['user'] == 'Singularity'):
-        msg = data['msg'].split()
-        msg = ''.join(msg[1:])
-
-        # bot.msg(bot.mainchan, msg)
