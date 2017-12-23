@@ -10,9 +10,12 @@ import logging
 import threading
 import argparse
 
+def tinyurl(url):
+    link    = 'https://tinyurl.com/api-create.php?url={}'.format(url)
+    newlink = requests.get(link, headers = {'User-agent': 'Chrome'}).text
+    source  = urllib.parse.urlparse(url).netloc
+    return (source, newlink)
 
-
-apikey = 'YOUR_API_KEY'
 class newsapi:
     def __init__(self, apikey, sources, domains, queries):
         self.apikey  = apikey
@@ -24,7 +27,6 @@ class newsapi:
     def get(self, endpoint, params = {}):
         params = dict((k, v) for k, v in params.items() if v)
         params = urllib.parse.unquote(urllib.parse.urlencode(params))
-        # print ('{}{}?{}&apikey={}'.format(self.link, endpoint, params, self.apikey))
         try:
             res = requests.get(
                 '{}{}?{}&apikey={}'.format(self.link, endpoint, params, self.apikey),
@@ -37,13 +39,15 @@ class newsapi:
             print (_type, _value)
         return None
 
-    def notifier(self):
+    def notifier(self, bot):
+        time.sleep(20)
         while True:
-            utc = (60 * 60) * 3
+            utc  = (60 * 60) * 3
+            mins = 3
             date_from = datetime.datetime.fromtimestamp(time.time() - (utc)).strftime('%Y-%m-%dT%H:%M:%S')
-            date_to   = datetime.datetime.fromtimestamp(time.time() - (utc) + (60 * 3)).strftime('%Y-%m-%dT%H:%M:%S')
+            date_to   = datetime.datetime.fromtimestamp(time.time() - (utc) + (60 * mins)).strftime('%Y-%m-%dT%H:%M:%S')
 
-            res = bot.newsapi.get(
+            res = self.get(
                 'everything',
                 params = {
                     'q'        : self.queries,
@@ -55,73 +59,110 @@ class newsapi:
                     'page'     : ''
                 }
             )
-            # jsonfile = 'everything/everything-{}-{}.json'.format(date_from, date_to)
-            jsonfile = 'everything/everything-{}-{}.json'.format(args._from, args.to)
+
+            jsonfile = 'everything/everything-{}-{}.json'.format(date_from, date_to)
             jsonfile = jsonfile.replace(':', '-')
-            # if int(res['totalResults']) == 0: return 
             json.dump(res, open(jsonfile, 'w'))
             for n, article in enumerate(res['articles']):
                 if article['description'] == None: 
                     continue
-                f = '{}) Source: {}, Title: {}, Link: {}'.format(n, article['source']['name'], article['title'], article['url'])
-                print (f)
+
+                link   = tinyurl(article['url'])
+                title  = '\x032« '  + article['title'] + ' »\x0f'
+                source = '\x036'  + article['source']['name']  + '\x0f'
+                tlink  = '\x0311' + link[1] + '\x0f'
+                send   = 'Title: {} Source: {} Link: {}'.format(title, source, tlink)
+
+                print ('SEND:', send)
+                bot.msg(bot.mainchan, send)
                 time.sleep(2)
 
-
-            time.sleep(60 * 3)
+            time.sleep(60 * 10)
 
 
 def setup(bot):
     sources = ['hacker-news', 'national-geographic', 'new-scientist', 'next-big-future', 'the-economist', 'the-verge']
     domains = [
+        # science
         'phys.org',
         'sciencenews.org',
         'sciencedaily.com',
         'sciencemag.org',
-        'independent.co.uk',
         'sciencenewsforstudents.org',
         'sci-news.com',
         'newscientist.com',
-        'huffingtonpost.com',
-        'bbc.com',
         'scientificamerican.com',
-        'telegraph.co.uk',
-        'abc.net.au',
-        'indiatimes.com',
-        'foxnews.com',
         'nasa.gov',
-        'cnn.com',
-        'bbc.co.uk',
-        'theguardian.com',
-        'reuters.com',
-        'nbcnews.com',
-        'eurekalert.org',
         'sciencealert.com',
-        'newsnow.co.uk',
-        'journalism.org',
-        'manoramaonline.com',
         'discovermagazine.com',
-        'nextbigfuture.com'
+        'nextbigfuture.com',
+        'popsci.com',
+        'sciencedirect.com',
+        'nature.com',
+        'space.com',
+        'plos.org',
+        'psychologicalscience.org',
+        'springer.com',
+        'biomedcentral.com',
+        'cambridge.org',
+        'wiley.com',
+        'iflscience.com',
+        'wired.com',
+        'oup.com',
+        # community
+        'quora.com',
+        'reddit.com',
+        '9gag.com',
+        'tumblr.com',
+        'xkcd.com',
+        # mixin
+        # 'independent.co.uk',
+        # 'huffingtonpost.com',
+        # 'bbc.com',
+        # 'telegraph.co.uk',
+        # 'abc.net.au',
+        # 'indiatimes.com',
+        # 'foxnews.com',
+        # 'cnn.com',
+        # 'bbc.co.uk',
+        # 'theguardian.com',
+        # 'reuters.com',
+        # 'nbcnews.com',
+        # 'eurekalert.org',
+        # 'newsnow.co.uk',
+        # 'journalism.org',
+        # 'manoramaonline.com',
+        # 'latimes.com',
+        # 'go.com',
+        # 'handelsblatt.com',
+        # 'gizmodo.com',
+        # 'washingtonpost.com',
+        # 'berkeley.edu',
+        # 'timesofisrael.com',
+        # 'dailywire.com',
+        # 'wired.com',
+        # 'teenvogue.com',
+        # 'apnews.com',
+        # 'bristol.ac.uk',
+        # 'voanews.com',
     ]
     queries = []
-    bot.newsapi = newsapi(api_key, sources, domains, queries)
-    # bot.newsapi.notifier()
+    bot.newsapi = newsapi('API_KEY', sources, domains, queries)
+    t = threading.Thread(target=bot.newsapi.notifier, args=(bot,))
+    t.setDaemon(True)
+    t.start()
 
 def run(bot, data):
 
     cmd = data['msg'].split()[0].strip()
     if(cmd == '!news'):
-        print('[NEWS] ', bot, data)
         # Time to UTC
-        # date_from = datetime.datetime.fromtimestamp(time.time() - (60 * 60 * 3)).strftime('%Y-%m-%dT%H:%M:%SZ') # 3hours
         utc = (60 * 60) * 3
         date_from = datetime.datetime.fromtimestamp(time.time() - (utc)).strftime('%Y-%m-%dT%H:%M:%S')
         date_to   = datetime.datetime.fromtimestamp(time.time() - (utc) + (60 * 3)).strftime('%Y-%m-%dT%H:%M:%S')
 
         cmd  = data['msg'].split()[0].strip()
         msg  = data['msg'].split()[1:]
-        print ('CMD : ', cmd)
-        print ('MSG : ', msg)
 
         parser = argparse.ArgumentParser(description='newsApi')
 
@@ -140,7 +181,7 @@ def run(bot, data):
         parser.add_argument('-page'   , '--page'   , nargs='?', default='',   type=str)
         
         args = parser.parse_args(msg)
-        print ('ARGS: ', args)
+        # print ('ARGS: ', args)
 
         def CheckIfOnlyOneAgrumentIsTrue(iterable):
             i = iter(iterable)
@@ -181,7 +222,7 @@ def run(bot, data):
                     'page'     : args.page
                 }
             )
-            # jsonfile = 'everything/everything-{}-{}.json'.format(date_from, date_to)
+
             jsonfile = 'everything/everything-{}-{}.json'.format(args._from, args.to)
             jsonfile = jsonfile.replace(':', '-')
             # if int(res['totalResults']) == 0: return 
@@ -189,9 +230,15 @@ def run(bot, data):
             for n, article in enumerate(res['articles']):
                 if article['description'] == None: 
                     continue
-                print('{}) Source: {}, Title: {}, Link: {} PublishedAt: {}'.format(
-                    n, article['source']['name'], article['title'], article['url'], article['publishedAt'])
-                )
+
+                link   = tinyurl(article['url'])
+                title  = '\x032'  + article['title'] + '\x0f'
+                source = '\x036'  + article['source']['name']  + '\x0f'
+                tlink  = '\x0311' + link[1] + '\x0f'
+                send   = 'Title: {}, Source: {}, Link: {}'.format(title, source, tlink)
+
+                bot.msg(bot.mainchan, send)
+                time.sleep(2)
 
         if args.feed:
             res = bot.newsapi.get('sources')
