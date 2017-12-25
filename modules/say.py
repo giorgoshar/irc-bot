@@ -14,7 +14,9 @@ def setup(bot):
     pass
 
 def run(bot, data):
+    # print (bot, data)
 
+    # regex = r'.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*'
     regex = r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)'
     res   = re.search(regex, data['msg'])
 
@@ -38,5 +40,12 @@ def run(bot, data):
                     views    = int(theJSON['items'][0]['statistics']['viewCount'])
                     channel  = theJSON['items'][0]['snippet']['channelTitle']
 
-                    msg = '{}Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
+                    msg = '{} Title: {} Length: {} Views: {:,d} Channel: {}'.format(ytlogo, title, duration, views, channel)
                     bot.msg(bot.mainchan, msg)
+
+
+    if(data['msg'].startswith('!say') and data['user'] == 'Singularity'):
+        msg = data['msg'].split()
+        msg = ''.join(msg[1:])
+
+        # bot.msg(bot.mainchan, msg)

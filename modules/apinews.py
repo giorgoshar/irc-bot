@@ -27,6 +27,9 @@ class newsapi:
     def get(self, endpoint, params = {}):
         params = dict((k, v) for k, v in params.items() if v)
         params = urllib.parse.unquote(urllib.parse.urlencode(params))
+
+        # print ('{}{}?{}&apikey={}'.format(self.link, endpoint, params, self.apikey))
+
         try:
             res = requests.get(
                 '{}{}?{}&apikey={}'.format(self.link, endpoint, params, self.apikey),
@@ -42,12 +45,14 @@ class newsapi:
     def notifier(self, bot):
         time.sleep(20)
         while True:
+            # 3 hours for utc
             utc  = (60 * 60) * 3
+            # delay until next request
             mins = 3
             date_from = datetime.datetime.fromtimestamp(time.time() - (utc)).strftime('%Y-%m-%dT%H:%M:%S')
-            date_to   = datetime.datetime.fromtimestamp(time.time() - (utc) + (60 * mins)).strftime('%Y-%m-%dT%H:%M:%S')
+            date_to   = datetime.datetime.fromtimestamp(time.time() - (utc) + (60 * mins) - 1).strftime('%Y-%m-%dT%H:%M:%S')
 
-            res = self.get(
+            res = bot.newsapi.get(
                 'everything',
                 params = {
                     'q'        : self.queries,
@@ -55,33 +60,34 @@ class newsapi:
                     'domains'  : self.domains,
                     'from'     : date_from,
                     'to'       : date_to,
-                    'language' : '',
+                    'language' : 'en',
                     'page'     : ''
                 }
             )
 
             jsonfile = 'everything/everything-{}-{}.json'.format(date_from, date_to)
             jsonfile = jsonfile.replace(':', '-')
-            json.dump(res, open(jsonfile, 'w'))
+
+            # json.dump(res, open(jsonfile, 'w'))
+            
             for n, article in enumerate(res['articles']):
                 if article['description'] == None: 
                     continue
 
                 link   = tinyurl(article['url'])
-                title  = '\x032« '  + article['title'] + ' »\x0f'
-                source = '\x036'  + article['source']['name']  + '\x0f'
-                tlink  = '\x0311' + link[1] + '\x0f'
-                send   = 'Title: {} Source: {} Link: {}'.format(title, source, tlink)
+                title  = '\x032,99• ' + article['title'] + ' •\x0f'
+                source = '\x036,99'   + article['source']['name']  + '\x0f'
+                tlink  = '\x0311,99'  + link[1] + '\x0f'
 
-                print ('SEND:', send)
-                bot.msg(bot.mainchan, send)
+                msg = 'Title: {} Source: {} Link: {}'.format(title, source, tlink)
+
+                bot.msg(bot.mainchan, msg)
                 time.sleep(2)
 
-            time.sleep(60 * 10)
-
+            time.sleep(60 * mins)
 
 def setup(bot):
-    sources = ['hacker-news', 'national-geographic', 'new-scientist', 'next-big-future', 'the-economist', 'the-verge']
+    sources = []
     domains = [
         # science
         'phys.org',
@@ -109,16 +115,18 @@ def setup(bot):
         'iflscience.com',
         'wired.com',
         'oup.com',
+        'spaceflightnow.com',
         # community
         'quora.com',
         'reddit.com',
         '9gag.com',
         'tumblr.com',
         'xkcd.com',
+        'lifehacker.com',
         # mixin
         # 'independent.co.uk',
-        # 'huffingtonpost.com',
-        # 'bbc.com',
+        'huffingtonpost.com',
+        'bbc.com',
         # 'telegraph.co.uk',
         # 'abc.net.au',
         # 'indiatimes.com',
@@ -145,9 +153,22 @@ def setup(bot):
         # 'apnews.com',
         # 'bristol.ac.uk',
         # 'voanews.com',
+        # 'cbslocal.com',
+        # 'people.com',
+        # 'bloomberg.com',
+        # 'slate.com',
+        # 'snopes.com',
+        # 'fox26houston.com',
+        # 'deadspin.com',
+        # 'theconversation.com',
+        # 'firstdraftnews.com',
+        # 'france24.com',
+        # 'thehill.com',
+        # 'aljazeera.com',
     ]
     queries = []
     bot.newsapi = newsapi('API_KEY', sources, domains, queries)
+
     t = threading.Thread(target=bot.newsapi.notifier, args=(bot,))
     t.setDaemon(True)
     t.start()
@@ -181,7 +202,6 @@ def run(bot, data):
         parser.add_argument('-page'   , '--page'   , nargs='?', default='',   type=str)
         
         args = parser.parse_args(msg)
-        # print ('ARGS: ', args)
 
         def CheckIfOnlyOneAgrumentIsTrue(iterable):
             i = iter(iterable)
@@ -207,7 +227,7 @@ def run(bot, data):
                 t = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 print('[{}] Source: {}, Title: {}, Link: {}'.format(article['publishedAt'], article['source']['name'], article['title'], article['url']))
 
-            json.dump(res, open('top_headlines.json', 'w'))
+            # json.dump(res, open('top_headlines.json', 'w'))
 
         if args.everything:
             res = bot.newsapi.get(
@@ -222,19 +242,19 @@ def run(bot, data):
                     'page'     : args.page
                 }
             )
-
+            # jsonfile = 'everything/everything-{}-{}.json'.format(date_from, date_to)
             jsonfile = 'everything/everything-{}-{}.json'.format(args._from, args.to)
             jsonfile = jsonfile.replace(':', '-')
             # if int(res['totalResults']) == 0: return 
-            json.dump(res, open(jsonfile, 'w'))
+            # json.dump(res, open(jsonfile, 'w'))
             for n, article in enumerate(res['articles']):
                 if article['description'] == None: 
                     continue
 
                 link   = tinyurl(article['url'])
-                title  = '\x032'  + article['title'] + '\x0f'
-                source = '\x036'  + article['source']['name']  + '\x0f'
-                tlink  = '\x0311' + link[1] + '\x0f'
+                title  = '\x032,99'  + article['title'] + '\x0f'
+                source = '\x036,99'  + article['source']['name']  + '\x0f'
+                tlink  = '\x0311,99' + link[1] + '\x0f'
                 send   = 'Title: {}, Source: {}, Link: {}'.format(title, source, tlink)
 
                 bot.msg(bot.mainchan, send)
@@ -244,4 +264,4 @@ def run(bot, data):
             res = bot.newsapi.get('sources')
             for n, source in enumerate(res['sources']):
                 print ('{}) Source: {}, Link: {}, Category: {}'.format(n, source['name'], source['url'], source['category']))
-            json.dump(res, open('feed.json', 'w'))
+            # json.dump(res, open('feed.json', 'w'))

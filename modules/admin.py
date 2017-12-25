@@ -8,7 +8,7 @@ import json
 
 class config:
     filename = 'admins.json'
-    admin    = { 'Singularity' : { 'level': 9, 'pass' : 'e10adc3949ba59abbe56e057f20f883e', 'is_on' : False, 'la_on' : None } }
+    admin    = { 'Admin' : { 'level': 9, 'pass' : 'e10adc3949ba59abbe56e057f20f883e', 'is_on' : False, 'la_on' : None } }
 
 class members:
     def __init__(self):

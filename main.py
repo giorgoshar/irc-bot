@@ -34,6 +34,7 @@ class ModuleManager:
         sys.path.append(self.path)
         self.load()
 
+
     def run(self, data):
         threads = []
         for module in self.modules:
@@ -42,8 +43,9 @@ class ModuleManager:
             t.setDaemon(True)
             t.start()
             threads.append(t)
-        # for t in threads:
-            # t.join()
+        
+        # for module in self.modules:
+        #    d = threads.deferToThread(module['run'], self.bot, data)
 
     def load(self):
         print ("Loading modules")
