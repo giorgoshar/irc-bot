@@ -10,6 +10,7 @@ import logging
 import threading
 import argparse
 
+
 def tinyurl(url):
     link    = 'https://tinyurl.com/api-create.php?url={}'.format(url)
     newlink = requests.get(link, headers = {'User-agent': 'Chrome'}).text
