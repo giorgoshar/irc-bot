@@ -58,13 +58,8 @@ class IRC:
                 self.recv(recv)
 
         except Exception as e:
-            self.socket.close()
-            print(
-                type(e).__name__,          # TypeError
-                __file__,                  # /tmp/example.py
-                e.__traceback__.tb_lineno  # 2
-            )
-            sys.exit(1)
+            print(e)
+            self.EXIT()
     def send(self, text, encoding='utf-8'):
         message = (text + IRC.CRLF).encode(encoding)
         self.socket.send(message)
@@ -75,6 +70,7 @@ class IRC:
             messages = re.sub(r'[\r\n]', '', messages)
             prefix, command, args = IRC.parsemsg(messages)
             self.irc_handle_command(prefix, command, args)
+            self.cb_handle_command({'prefix':prefix, 'command':command, 'args':args}, messages)
 
     @staticmethod
     def parsemsg(s):
@@ -96,11 +92,16 @@ class IRC:
 
     @staticmethod
     def parseprefix(prefix):
-        match = re.match(r'(?P<name>[^ ]+?)\!(?P<ident>[^ ]+?)@(?P<host>.+)', prefix)
+        match = re.match(r'(?P<nickname>[^ ]+?)\!(?P<ident>[^ ]+?)@(?P<host>.+)', prefix)
         group = match.groupdict()
         if len(group) == 3:
             return group
         return False
+
+    def EXIT(self, message=''):
+        self.send(f'QUIT {message}')
+        self.socket.close()
+        sys.exit(1)
 
     def NICK(self, nickname):
         self.send(f'NICK {nickname}')
@@ -110,6 +111,7 @@ class IRC:
         self.send(f'JOIN {channel}')
     def PRIVMSG(self, to, message):
         self.send(f'PRIVMSG {to} :{message}')
+
 
     def irc_PING(self, prefix, args):
         if len(args) > 0:
@@ -121,37 +123,39 @@ class IRC:
     def irc_PRIVMSG(self, prefix, args):
         mode = 'channel' if args[0][0].strip() == '#' else 'private'
         user = IRC.parseprefix(prefix)
-        if user:
-            print(f'User: {user} used command {args}')
-            if '!kill' in ''.join(args):
-                self.socket.close()
-                sys.exit()
 
     def irc_handle_command(self, prefix, command, args):
-        print(f'''
-            \rprefix : {prefix}
-            \rcommand: {command}
-            \rargs   : {args}
-        ''')
+        # print(f'''
+        #     \rprefix : {prefix}
+        #     \rcommand: {command}
+        #     \rargs   : {args}
+        # ''')
         method = getattr(self, f'irc_{command}', None)
         if method: method(prefix, args)
         else: print(f'Could not run the command: irc_{command}')
+    def cb_handle_command(self, parsed, raw):
+        pass
 
 class Bot(IRC):
     def __init__(self):
+        print('initializing Bot')
         IRC.__init__(self)
+        self.modules = {
+            # 'say' : Say()
+        }
+        self.userinfo = User('myusername','myhostname','myservername','myrealname')
+        self.nickname = 'myfirstircconnection'
+        self.channels = ['#testingircconnect']
 
-# irc = Bot()
+    def cb_handle_command(self, parsed, raw):
+        print('data', parsed)
+        print('raw',  raw)
+
+
+
+bot = Bot()
+bot.connect('chat.freenode.net', 6667)
+
+
+# irc.run_module('say', message='ok',to='admin')
 # irc.connect('chat.freenode.net', 6667)
-
-# messages = ''':orwell.freenode.net 372 myfirstircconnec :- #freenode and using the '/who freenode/staff/*' command. You may message
-# :orwell.freenode.net 372 myfirstircconnec :- any of us at any time. Please note that freenode predominantly provides
-# :orwell.freenode.net 372 myfirstircconnec :- assistance via private message, and while we have a network channel the
-# :freenode-connect!bot@freenode/utility-bot/frigg NOTICE myfirstircconnec :Welcome to freenode. To protect the network all new connections will be scanned for vulnerabilities. This will not harm your computer, and vulnerable hosts will be notified.
-# :freenode-connect!bot@freenode/utility-bot/frigg PRIVMSG myfirstircconnec :☺VERSION☺
-# :myfirstircconnec!~myusernam@ppp-2-85-246-179.home.otenet.gr JOIN #testingircconnect
-# :orwell.freenode.net 353 myfirstircconnec @ #testingircconnect :myfirstircconnec @studenttest1
-# :orwell.freenode.net 366 myfirstircconnec #testingircconnect :End of /NAMES list.
-# PING :orwell.freenode.net
-# :myfirstircconnec!~myusernam@ppp-2-85-246-179.home.otenet.gr QUIT :Ping timeout: 240 seconds
-# ERROR :Closing Link: ppp-2-85-246-179.home.otenet.gr (Ping timeout: 240 seconds)'''
